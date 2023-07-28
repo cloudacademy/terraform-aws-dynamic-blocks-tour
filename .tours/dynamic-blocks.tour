@@ -1,6 +1,6 @@
 {
   "$schema": "https://aka.ms/codetour-schema",
-  "title": "dynamic-blocks",
+  "title": "Deploying AWS Resources Using Dynamic Blocks",
   "steps": [
     {
       "directory": "aws_subnets",
@@ -35,7 +35,7 @@
         }
       },
       "description": "The `aws_security_group` resource is configured within the `aws_vpc`. The purpose of this security group is to define ingress and egress rules to allow or deny traffic within the VPC.\n\nEach security group can contain one or more ingress or egress rules. These rules begin to add up within the security group definition, and developers must locate and update the security group rules each time a change is requested. These nested rules are a perfect use case for Terraform dynamic blocks.\n\nThe security group is configured with four rules.",
-      "title": "Original Security Group"
+      "title": "Security Group"
     },
     {
       "file": "aws_subnets/original/main.tf",
@@ -100,7 +100,7 @@
     {
       "file": "aws_subnets/refactor/main.tf",
       "description": "Click **Insert Code** to insert the following local variables, then click **Next**:\n\n```js\n# Locals\n\nlocals {\n  sg_name        = \"webserver-sg\"\n  sg_description = \"Web Server Security Group\"\n  vpc_cidr       = \"10.0.0.0/16\"\n  tags           = {\n    Name = \"ca-lab\"\n  }\n  ingress_rules = [\n    {\n      port        = 80,\n      protocol    = \"tcp\"\n      cidr_blocks = [\"0.0.0.0/0\"]\n    },\n    {\n      port        = 443,\n      protocol    = \"tcp\"\n      cidr_blocks = [\"0.0.0.0/0\"]\n    },\n    {\n      port        = 22,\n      protocol    = \"tcp\"\n      cidr_blocks = [local.vpc_cidr]\n    }\n  ]\n  egress_rules = [\n    {\n      port        = 0,\n      protocol    = \"tcp\"\n      cidr_blocks = [\"0.0.0.0/0\"]\n    }\n  ]\n}\n\n\n```",
-      "line": 47,
+      "line": 82,
       "title": "Local Variables"
     },
     {
@@ -136,7 +136,7 @@
     {
       "file": "aws_subnets/refactor/main.tf",
       "description": "Insert the following VPC resource block, then click **Next**:\n\n```js\n# Resources\n\nresource \"aws_vpc\" \"lab_vpc\" {\n  cidr_block = local.vpc_cidr\n\n  tags = local.tags\n}\n\n\n```",
-      "line": 161,
+      "line": 169,
       "title": "Refactored VPC"
     },
     {
@@ -153,6 +153,12 @@
       },
       "description": "The VPC resource block now obtains the `cidr_block` and `tags` values from the local variables within the template.",
       "title": "VPC Variables"
+    },
+    {
+      "file": "aws_subnets/refactor/main.tf",
+      "description": "Insert the following security group resource block, then click **Next**:\n\n```js\nresource \"aws_security_group\" \"sg-webserver\" {\n  vpc_id      = aws_vpc.lab_vpc.id\n  name        = local.sg_name\n  description = local.sg_description\n\n  dynamic \"ingress\" {\n    for_each = local.ingress_rules\n    content {\n      from_port   = ingress.value.port\n      to_port     = ingress.value.port\n      protocol    = ingress.value.protocol\n      cidr_blocks = ingress.value.cidr_blocks\n    }\n  }\n\n  dynamic \"egress\" {\n    for_each = local.egress_rules\n    content {\n      from_port   = egress.value.port\n      to_port     = egress.value.port\n      protocol    = egress.value.protocol\n      cidr_blocks = egress.value.cidr_blocks\n    }\n  }\n}\n```",
+      "line": 81,
+      "title": "Refactored Security Group"
     },
     {
       "file": "aws_subnets/refactor/main.tf",
