@@ -3,8 +3,9 @@
   "title": "dynamic-blocks",
   "steps": [
     {
-      "directory": "aws_ec2_subnets",
-      "description": "The **aws_subnets** directory contains two subdirectories: **original** and **refactor**. Each folder contains a **main.tf** file. \n\nIn this lab, you will refactor the Terraform configuration defined in the **original/main.tf** file. The refactored template will use dynamic blocks and iterable variables to improve the maintainability of the template.\n\nYou will only be deploying resources defined in the **refactor/main.tf** file.\n\nClick **Next** to review the original Terraform template."
+      "directory": "aws_subnets",
+      "description": "The **aws_subnets** directory contains two subdirectories: **original** and **refactor**. Each folder contains a **main.tf** file. \n\nYou will refactor the original Terraform configuration defined in the **original/main.tf** file. The refactored template will use dynamic blocks to iterate over list and map variables.\n\nYou will only be deploying resources defined in the **refactor/main.tf** file.\n\nClick **Next** to review the original Terraform template.",
+      "title": "Directories"
     },
     {
       "file": "aws_subnets/original/main.tf",
@@ -14,76 +15,93 @@
           "character": 1
         },
         "end": {
-          "line": 23,
+          "line": 20,
           "character": 2
         }
       },
-      "description": "An `aws_vpc` resource is defined with a CIDR block of `10.0.0.0/16` and is configured with the following tags:\n\n- Team\n- DeploymentType\n- Environment\n- Project\n\nAs resources are added to this Terraform template, you can assume that more AWS resources will require similar tags. However, providing these tags manually on each new resource will add to a project's overhead."
+      "description": "An `aws_vpc` resource is defined with a CIDR block of `10.0.0.0/16` and is configured with a `Name` tag.",
+      "title": "VPC"
     },
     {
       "file": "aws_subnets/original/main.tf",
       "selection": {
         "start": {
-          "line": 26,
+          "line": 23,
           "character": 1
         },
         "end": {
-          "line": 29,
-          "character": 44
-        }
-      },
-      "description": "The `aws_security_group` resource is configured within the `aws_vpc`. The purpose of this security group is to define ingress and egress rules to allow or deny traffic to resources within the VPC.\n\nEach security group can contain one or more ingress or egress rules. These rules begin to add up within the security group definition and are a perfect use case for Terraform dynamic blocks.\n\nThe security group is configured with four rules."
-    },
-    {
-      "file": "aws_subnets/original/main.tf",
-      "selection": {
-        "start": {
-          "line": 31,
-          "character": 1
-        },
-        "end": {
-          "line": 43,
+          "line": 33,
           "character": 4
         }
       },
-      "description": "Allow inbound traffic on Port 80 (HTTP) and 443 (HTTPS) from the public internet."
+      "description": "The `aws_security_group` resource is configured within the `aws_vpc`. The purpose of this security group is to define ingress and egress rules to allow or deny traffic within the VPC.\n\nEach security group can contain one or more ingress or egress rules. These rules begin to add up within the security group definition, and developers must locate and update the security group rules each time a change is requested. These nested rules are a perfect use case for Terraform dynamic blocks.\n\nThe security group is configured with four rules.",
+      "title": "Original Security Group"
     },
     {
       "file": "aws_subnets/original/main.tf",
       "selection": {
         "start": {
-          "line": 45,
+          "line": 28,
           "character": 1
         },
         "end": {
-          "line": 50,
+          "line": 40,
           "character": 4
         }
       },
-      "description": "Allow inbound traffic on Port 22 (SSH) that originates from within the Amazon VPC CIDR block. This will allow only resources within the VPC to SSH into any EC2 instances associated with this security group."
+      "description": "Allow inbound traffic on Port `80` (HTTP) and `443` (HTTPS) from the public internet.",
+      "title": "Inbound Rules"
     },
     {
       "file": "aws_subnets/original/main.tf",
       "selection": {
         "start": {
-          "line": 52,
+          "line": 42,
           "character": 1
         },
         "end": {
-          "line": 57,
+          "line": 47,
           "character": 4
         }
       },
-      "description": "Allow all outbound traffic to the public internet."
+      "description": "Allow inbound traffic on Port 22 (SSH) that originates from within the Amazon VPC CIDR block. This will allow only resources within the VPC to SSH into any EC2 instances associated with this security group.",
+      "title": "Inbound Rules 2"
+    },
+    {
+      "file": "aws_subnets/original/main.tf",
+      "selection": {
+        "start": {
+          "line": 49,
+          "character": 1
+        },
+        "end": {
+          "line": 54,
+          "character": 4
+        }
+      },
+      "description": "Finally, allow all outbound traffic to the public internet.",
+      "title": "Outbound Rule"
     },
     {
       "directory": "aws_subnets/refactor",
-      "description": "Dynamic blocks are similar to the **count** and **for_each** meta-arguments in that they are designed to create multiple identical or similar resources.\n\nDynamic blocks, however, are more suitable for configuring duplicate attributes *within* a resource. In the examples that follow, you will learn how to use dynamic blocks in conjunction with the **for_each** meta-argument to simplify these resource definitions."
+      "description": "Dynamic blocks are similar to the **count** and **for_each** meta-arguments in that they are designed to create multiple resources or attributes within a template. \n\nA key difference is that dynamic blocks produce **nested blocks** instead of multiple instances of a resource or type value. Dynamic blocks are more suitable for configuring multiple attributes *within* a resource.\n\nDynamic blocks are configured in conjunction with the **for_each** meta-argument to produce these nested blocks. ",
+      "selection": {
+        "start": {
+          "line": 3,
+          "character": 126
+        },
+        "end": {
+          "line": 3,
+          "character": 140
+        }
+      },
+      "title": "Dynamic Blocks vs. for_each"
     },
     {
       "file": "aws_subnets/refactor/main.tf",
-      "description": "Local variables\n\n```js\n# Locals\n\nlocals {\n  vpc_cidr = \"10.0.0.0/16\"\n  tags = {\n    Team           = \"cloudacademy\"\n    DeploymentType = \"terraform\"\n    Environment    = \"development\"\n    Project        = \"dynamic-blocks\"\n  }\n  ingress_rules = [\n    {\n      port        = 80,\n      protocol    = \"tcp\"\n      cidr_blocks = [\"0.0.0.0/0\"]\n    },\n    {\n      port        = 443,\n      protocol    = \"tcp\"\n      cidr_blocks = [\"0.0.0.0/0\"]\n    },\n    {\n      port        = 22,\n      protocol    = \"tcp\"\n      cidr_blocks = [local.vpc_cidr]\n    }\n  ]\n  egress_rules = [\n    {\n      port        = 0,\n      protocol    = \"tcp\"\n      cidr_blocks = [\"0.0.0.0/0\"]\n    }\n  ]\n}\n\n\n```",
-      "line": 120
+      "description": "Click **Insert Code** to insert the following local variables, then click **Next**:\n\n```js\n# Locals\n\nlocals {\n  sg_name        = \"webserver-sg\"\n  sg_description = \"Web Server Security Group\"\n  vpc_cidr       = \"10.0.0.0/16\"\n  tags           = {\n    Name = \"ca-lab\"\n  }\n  ingress_rules = [\n    {\n      port        = 80,\n      protocol    = \"tcp\"\n      cidr_blocks = [\"0.0.0.0/0\"]\n    },\n    {\n      port        = 443,\n      protocol    = \"tcp\"\n      cidr_blocks = [\"0.0.0.0/0\"]\n    },\n    {\n      port        = 22,\n      protocol    = \"tcp\"\n      cidr_blocks = [local.vpc_cidr]\n    }\n  ]\n  egress_rules = [\n    {\n      port        = 0,\n      protocol    = \"tcp\"\n      cidr_blocks = [\"0.0.0.0/0\"]\n    }\n  ]\n}\n\n\n```",
+      "line": 47,
+      "title": "Local Variables"
     },
     {
       "file": "aws_subnets/refactor/main.tf",
@@ -93,63 +111,83 @@
           "character": 1
         },
         "end": {
-          "line": 23,
+          "line": 22,
           "character": 4
         }
       },
-      "description": "VPC cidr block defined as a local variable since it'll be used for both resources\n\ntags stored as a single object to keep template D.R.Y. and allow developers to update tags in one place.\n\nDisclaimer about `default_tags` Terraform element. This is for demonstration purposes, and used to highlight how to iterate over a single map in a dynamic block."
+      "description": "Local variables will simplify the template and allow these values to be referenced throughout the template. The string variables used within the VPC and security group resource blocks are defined first, followed by the `tags` map type variable.\n",
+      "title": "Local Variables 2"
     },
     {
       "file": "aws_subnets/refactor/main.tf",
       "selection": {
         "start": {
-          "line": 24,
+          "line": 23,
           "character": 1
         },
         "end": {
-          "line": 29,
+          "line": 28,
           "character": 7
         }
       },
-      "description": "Ingress and egress sg rules stored a lists of objects to be iterated over with a dynamic block."
+      "description": "The ingress and egress security group rules are stored as a list of map-type variables. Each map represents a rule and will be referenced as the dynamic block iterates over each list.",
+      "title": "Security Group Rules Variables"
     },
     {
       "file": "aws_subnets/refactor/main.tf",
-      "description": "VPC\n\n```js\n# Resources\n\nresource \"aws_vpc\" \"lab_vpc\" {\n  cidr_block = local.vpc_cidr\n\n  # Tags\n  dynamic \"tag\" {\n    for_each = local.tags\n    content {\n      key   = tag.key\n      value = tag.value\n    }\n  }\n}\n\n\n```",
-      "line": 78
+      "description": "Insert the following VPC resource block, then click **Next**:\n\n```js\n# Resources\n\nresource \"aws_vpc\" \"lab_vpc\" {\n  cidr_block = local.vpc_cidr\n\n  tags = local.tags\n}\n\n\n```",
+      "line": 161,
+      "title": "Refactored VPC"
     },
     {
       "file": "aws_subnets/refactor/main.tf",
       "selection": {
         "start": {
-          "line": 56,
+          "line": 51,
           "character": 1
         },
         "end": {
+          "line": 55,
+          "character": 2
+        }
+      },
+      "description": "The VPC resource block now obtains the `cidr_block` and `tags` values from the local variables within the template.",
+      "title": "VPC Variables"
+    },
+    {
+      "file": "aws_subnets/refactor/main.tf",
+      "selection": {
+        "start": {
           "line": 62,
-          "character": 4
-        }
-      },
-      "description": "dynamic block tag description\n- for_each iterator\n- tag element\n- content block\n- key and value"
-    },
-    {
-      "file": "aws_subnets/refactor/main.tf",
-      "description": "Security Group\n\n```js\nresource \"aws_security_group\" \"sg-webserver\" {\n  vpc_id      = aws_vpc.lab_vpc.id\n  name        = \"sg-webserver\"\n  description = \"Web Server Security Group\"\n\n  dynamic \"ingress\" {\n    for_each = local.ingress_rules\n    content {\n      from_port   = ingress.value.port\n      to_port     = ingress.value.port\n      protocol    = ingress.value.protocol\n      cidr_blocks = ingress.value.cidr_blocks\n    }\n  }\n\n  dynamic \"egress\" {\n    for_each = local.egress_rules\n    content {\n      from_port   = egress.value.port\n      to_port     = egress.value.port\n      protocol    = egress.value.protocol\n      cidr_blocks = egress.value.cidr_blocks\n    }\n  }\n}\n```",
-      "line": 113
-    },
-    {
-      "file": "aws_subnets/refactor/main.tf",
-      "selection": {
-        "start": {
-          "line": 70,
           "character": 1
         },
         "end": {
-          "line": 78,
+          "line": 80,
           "character": 4
         }
       },
-      "description": "Iterating over a list of objects and using the key names to access the specific values."
+      "description": "A dynamic block contains the following elements:\n\n- The `dynamic` keyword defines the block and is followed by a label (`ingress` and `egress`)\n- The `for_each` meta-argument defines the map or list variable to iterate over\n- An iterator argument (not used) specifies the name of the current element in the iteration. When this argument is omitted, the label is used as the iterator argument.\n- The `content` block contains the nested block definition. The keys of this content block will vary based on the nested attributes being defined. \n\nSecurity group rules require the following attributes:\n\n- `from_port`\n- `to_port`\n- `protocol`\n- `cidr_block`\n\nTo retrieve the values of each map object in the `ingress_rules` list, you use the `value` function. The `ITERATOR.value.KEY_NAME` pattern is used to retrieve the value of the specific key in the map object (e.g. `ingress_rules.value.from_port`).\n",
+      "title": "Dynamic Blocks"
+    },
+    {
+      "directory": "aws_subnets/refactor",
+      "description": "The resources defined in the `refactor/main.tf` file are now configured by referencing variables and with the help of dynamic, nested blocks.\n\nThis refactored template contains more lines of code but changes to tags or security group rules can be applied by updating the `tags`, `ingress_rules`, or `egress_rules` variables.\n\nAlthough it is outside the scope of this lab, this refactor gets you one step closer to utilizing [Terraform modules](https://developer.hashicorp.com/terraform/language/modules) to package and reuse resource configurations.",
+      "title": "Future Updates"
+    },
+    {
+      "directory": "aws_subnets/refactor",
+      "description": "Click the following command to initialize Terraform in the **refactor** subdirectory:\n\n>> cd aws_subnets/refactor && terraform init\n",
+      "title": "Init"
+    },
+    {
+      "directory": "aws_subnets/refactor",
+      "description": "Click to run the following command:\n\n>> terraform plan",
+      "title": "Plan"
+    },
+    {
+      "directory": "aws_subnets/refactor",
+      "description": "Click to run the following command to deploy your Amazon VPC and Security Group:\n\n>> terraform apply --auto-approve",
+      "title": "Apply"
     }
   ]
 }

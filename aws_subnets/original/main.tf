@@ -15,17 +15,14 @@ resource "aws_vpc" "lab_vpc" {
   cidr_block = "10.0.0.0/16"
 
   tags = {
-    Team           = "cloudacademy"
-    DeploymentType = "terraform"
-    Environment    = "development"
-    Project        = "dynamic-blocks"
+    Name = "ca-lab"
   }
 }
 
 # Security Groups
 resource "aws_security_group" "sg-webserver" {
   vpc_id      = aws_vpc.lab_vpc.id
-  name        = "sg-webserver"
+  name        = "webserver-sg"
   description = "Web Server Security Group"
 
   ingress {
