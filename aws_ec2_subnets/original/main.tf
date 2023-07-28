@@ -15,7 +15,10 @@ resource "aws_vpc" "lab_vpc" {
   cidr_block = "10.0.0.0/16"
 
   tags = {
-    Name = "ca-lab-vpc"
+    Team           = "cloudacademy"
+    DeploymentType = "terraform"
+    Environment    = "development"
+    Project        = "dynamic-blocks"
   }
 }
 
@@ -23,7 +26,7 @@ resource "aws_vpc" "lab_vpc" {
 resource "aws_security_group" "sg-webserver" {
   vpc_id      = aws_vpc.lab_vpc.id
   name        = "sg-webserver"
-  description = "Security Group for Web Servers"
+  description = "Web Server Security Group"
 
   ingress {
     protocol    = "tcp"
@@ -39,18 +42,18 @@ resource "aws_security_group" "sg-webserver" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  egress {
+  ingress {
     protocol    = "tcp"
-    from_port   = 443
-    to_port     = 443
-    cidr_blocks = [var.vpc-cidr]
+    from_port   = 22
+    to_port     = 22
+    cidr_blocks = ["10.0.0.0/16"]
   }
 
   egress {
-    protocol    = "tcp"
-    from_port   = 1433
-    to_port     = 1433
-    cidr_blocks = [var.vpc-cidr]
+    protocol    = "-1"
+    from_port   = 0
+    to_port     = 0
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
