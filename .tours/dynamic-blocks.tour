@@ -157,7 +157,7 @@
     {
       "file": "aws_subnets/refactor/main.tf",
       "description": "Insert the following security group resource block, then click **Next**:\n\n```js\nresource \"aws_security_group\" \"sg-webserver\" {\n  vpc_id      = aws_vpc.lab_vpc.id\n  name        = local.sg_name\n  description = local.sg_description\n\n  dynamic \"ingress\" {\n    for_each = local.ingress_rules\n    content {\n      from_port   = ingress.value.port\n      to_port     = ingress.value.port\n      protocol    = ingress.value.protocol\n      cidr_blocks = ingress.value.cidr_blocks\n    }\n  }\n\n  dynamic \"egress\" {\n    for_each = local.egress_rules\n    content {\n      from_port   = egress.value.port\n      to_port     = egress.value.port\n      protocol    = egress.value.protocol\n      cidr_blocks = egress.value.cidr_blocks\n    }\n  }\n}\n```",
-      "line": 81,
+      "line": 105,
       "title": "Refactored Security Group"
     },
     {
@@ -194,6 +194,11 @@
       "directory": "aws_subnets/refactor",
       "description": "Click to run the following command to deploy your Amazon VPC and Security Group:\n\n>> terraform apply --auto-approve",
       "title": "Apply"
+    },
+    {
+      "directory": "aws_subnets/refactor",
+      "description": "You have successfully deployed an Amazon VPC and Security Group in AWS using Terraform. \n\nReturn to the Cloud Academy Lab browser tab and run the validation check associated with this lab step.",
+      "title": "Complete"
     }
   ]
 }
